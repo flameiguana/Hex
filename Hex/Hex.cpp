@@ -382,7 +382,11 @@ void Hex::printBoard(){
 	printTop(rows + PADDING, spacing);
 
 	for(int j = 0; j < (columns + PADDING); j++){
-		std::cout << std::string(spacing - 1, ' '); //Substitute space with row index.
+		int removeSpacing = 1;
+		if(j > 9)
+			removeSpacing = 2;
+
+		std::cout << std::string(spacing - removeSpacing, ' '); //Substitute a space with row index.
 		if(j > 0 && j < rows + PADDING - 1) //Ignore first and last row.
 			std::cout << j - 1 << "| ";
 		else 
@@ -400,7 +404,9 @@ void Hex::printBoard(){
 			printBottom(rows + PADDING);
 		else
 			printBottom(rows + PADDING, false); //dont print extra dash
+
 		spacing += 2;
+
 	}
 	//board->print(); prints the graph representation
 }
