@@ -7,7 +7,7 @@ void randomizeBoard(Hex &board){ }
 
 void printInstructions(){
 	cout << "How to play:\n";
-	cout << "Specify i j to place your piece. i goes horizontal, j vertical. Don't use commas.\n";
+	cout << "Specify i j to place your piece. i are columns, j rows. Don't use commas.\n";
 	cout << "Pie rule is in place, meaning whoever goes first can get their fist move stolen by\n";
 	cout <<	"the other player.\n";
 	cout << endl;
@@ -25,48 +25,48 @@ void readInput(int &x){
 	}
 }
 
-
+//Game loop.
 void goFirst(int rows, int simulations){
 	Hex game(rows);
 	game.printBoard();
 	int i,j;
 	while(true){
-	readInput(i);
-	readInput(j);
-	while(!game.markBoard(1, i, j)){
-		//This will keep getting input until the move is valid.
 		readInput(i);
 		readInput(j);
-	}
-	game.printBoard();
-	if(game.checkWin(1))
-		break;
-	game.computerMoveMC(2, simulations); //is guaranteed to be valid
-	game.printBoard();
-	if(game.checkWin(2))
-		break;
+		while(!game.markBoard(1, i, j)){
+			//This will keep getting input until the move is valid.
+			readInput(i);
+			readInput(j);
+		}
+		game.printBoard();
+		if(game.checkWin(1))
+			break;
+		game.computerMoveMC(2, simulations); //is guaranteed to be valid
+		game.printBoard();
+		if(game.checkWin(2))
+			break;
 	}
 }
 
+
 void goSecond(int rows, int simulations){
 	Hex game(rows);
-	string input;
 	game.printBoard();
 	int i,j;
 	while(true){
-	game.computerMoveMC(2, simulations);
- 	game.printBoard();
- 	if(game.checkWin(2))
-		break;
-	readInput(i);
-	readInput(j);
-	while(!game.markBoard(1, i, j)){
+		game.computerMoveMC(2, simulations);
+ 		game.printBoard();
+ 		if(game.checkWin(2))
+			break;
 		readInput(i);
 		readInput(j);
-	}
-	game.printBoard();
-	if(game.checkWin(1))
-		break;
+		while(!game.markBoard(1, i, j)){
+			readInput(i);
+			readInput(j);
+		}
+		game.printBoard();
+		if(game.checkWin(1))
+			break;
 	}
 }
 

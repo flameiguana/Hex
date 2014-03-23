@@ -244,7 +244,9 @@ int Hex::evaluateTile(int index, int playerNumber){
 //have an array of playable tile indices
 //have an array of value for each index
 void Hex::computerMove(int playerNumber){
-	//AI goes first.
+	
+	std::cout << "Waiting for AI..." << std::endl;
+	//if AI goes first.
 	if(turn == 0){
 		//put somewhere random
 		if(pieRule)
@@ -295,6 +297,8 @@ void Hex::computerMove(int playerNumber){
 */
 
 void Hex::computerMoveMC(int playerNumber, int simulations){
+	std::cout << "Waiting for AI..." << std::endl;
+
 	std::vector<float> timesWon(boardSize, 0.0f);
 	std::vector<float> timesPlayed(boardSize, 0.0f);
 
