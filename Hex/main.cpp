@@ -8,6 +8,8 @@ void randomizeBoard(Hex &board){ }
 void printInstructions(){
 	cout << "How to play:\n";
 	cout << "Specify i j to place your piece. i goes horizontal, j vertical. Don't use commas.\n";
+	cout << "Pie rule is in place, meaning whoever goes first can get their fist move stolen by\n";
+	cout <<	"the other player.\n";
 	cout << endl;
 }
 
@@ -77,7 +79,7 @@ int main(int argc, const char* arg[]){
 	readInput(rows);
 
 	char first;
-	cout << "Would you like to go first (y/n)?" << endl;
+	cout << "Would you like to go first (y/n)?. First player is X, second is O" << endl;
 	cin >> first;
 
 	if(first == 'y')
