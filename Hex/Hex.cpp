@@ -36,7 +36,7 @@ public:
 			playable = false;
 		}
 	}
-	void printTile(){
+	char getPlayerChar(){
 		char tileChar = 0;
 		switch(playerNumber){
 			case 0:
@@ -52,7 +52,7 @@ public:
 				tileChar = '#';
 				break;
 		}
-		std::cout << tileChar;
+		return tileChar;
 	}
 };
 
@@ -291,7 +291,8 @@ void Hex::computerMove(int playerNumber){
 /*
 	Monte Carlo Steps:
 	Copy current board.
-	For desired iterations, shuffle empty tiles and place tiles in alternating order.
+	For desired iterations, shuffle empty tiles and place tiles in alternating order. This
+	behaves as if the opponent is making random moves.
 	Check who won, give a point to first tile if it wins.
 	Find the tile with the highest win percentage and use that as the next real move.
 */
@@ -351,68 +352,77 @@ void Hex::computerMoveMC(int playerNumber, int simulations){
 		markBoard(playerNumber, unmapi(bestTileIndex) - 1, unmapj(bestTileIndex) - 1);
 }
 
-//The top part of a row of tiles, along with indices.
-void printTop(int count, int spacing){
-	//Print some spaces
-	std::cout << std::string(spacing, ' ');
-	//Don't want to index the first or last columns.
-	std::cout << std::string(4, ' ');
-	for(int i = 0; i < count - 2; i++){
-		std::cout << "  " << i <<" ";
+//Anonymous namespace to hide implementation details (as opposed to using private static methods)
+namespace {
+	//The top part of a row of tiles, along with indices.
+	void printTop(std::ostream& out, int count, int spacing){
+		//Print some spaces
+		out << std::string(spacing, ' ');
+		//Don't want to index the first or last columns.
+		out << std::string(4, ' ');
+		for(int i = 0; i < count - 2; i++){
+			out << "  " << i <<" ";
+		}
+		out << std::endl;
+		//Print the triangle shape.
+		out << std::string(spacing, ' ');
+		for(int i = 0; i < count; i++){
+			out << " / \\";
+		}
+		out << std::endl;
 	}
-	std::cout << std::endl;
-	//Print the triangle shape.
-	std::cout << std::string(spacing, ' ');
-	for(int i = 0; i < count; i++){
-		std::cout << " / \\";
+
+	//The bottom part of a row of tiles.
+	void printBottom(std::ostream& out, int count, bool extra = true){
+		for(int i = 0; i < count; i++)
+			out << " \\ /";
+		if(extra)
+			out << " \\";
+		out << std::endl;
 	}
-	std::cout << std::endl;
 }
 
-//The bottom part of a row of tiles.
-void printBottom(int count, bool extra = true){
-	for(int i = 0; i < count; i++)
-		std::cout << " \\ /";
-	if(extra)
-		std::cout << " \\";
-	std::cout << std::endl;
-}
 
 //Prints a fancy ascii board.
-void Hex::printBoard(){
-	std::cout << std::endl;
+void Hex::printBoard(std::ostream& out) const{
+	out << std::endl;
 	int spacing = 1; //used for indenting the board
 
-	printTop(rows + PADDING, spacing);
+	printTop(out, rows + PADDING, spacing);
 
 	for(int j = 0; j < (columns + PADDING); j++){
 		int removeSpacing = 1;
 		if(j > 9)
 			removeSpacing = 2;
 
-		std::cout << std::string(spacing - removeSpacing, ' '); //Substitute a space with row index.
+		out << std::string(spacing - removeSpacing, ' '); //Substitute a space with row index.
 		if(j > 0 && j < rows + PADDING - 1) //Ignore first and last row.
-			std::cout << j - 1 << "| ";
+			out << j - 1 << "| ";
 		else 
-			std::cout << " | ";
+			out << " | ";
 
 		//Print the actual values in the tiles.
 		for(int i = 0; i < (rows + PADDING); i++){
-			boardTiles.at(map(i,j))->printTile();
-			std::cout << " | ";
+			out << boardTiles.at(map(i,j))->getPlayerChar();
+			out << " | ";
 		}
-		std::cout << std::endl;
+		out << std::endl;
 		//The bottom part serves as the top of the next row.
-		std::cout << std::string(spacing, ' ');
+		out << std::string(spacing, ' ');
 		if(j < columns + PADDING - 1)
-			printBottom(rows + PADDING);
+			printBottom(out, rows + PADDING);
 		else
-			printBottom(rows + PADDING, false); //dont print extra dash
+			printBottom(out, rows + PADDING, false); //dont print extra dash
 
 		spacing += 2;
-
 	}
 	//board->print(); prints the graph representation
+}
+
+std::ostream& operator<<(std::ostream& out, const Hex& board)
+{
+	board.printBoard(out);
+	return out;
 }
 
 //Apply delete on all pointers.

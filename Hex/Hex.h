@@ -12,7 +12,7 @@ public:
 	int getSize(){return rows;}
 	bool markBoard(int playerNumber, int i, int j);
 	void computerMove(int playerNumber);
-	void printBoard();
+	void printBoard(std::ostream& out) const;
 	bool checkWin(int playerNumber, bool printWinner = true);
 	void computerMoveMC(int playerNumber, int simulations);
 	~Hex();
@@ -33,8 +33,10 @@ private:
 	//This function takes coordinates and maps them onto unique indices
 	//of a 1d array (vector)
 	int evaluateTile(int index, int playerNumber);
-	int map(int i, int j){ return i * (rows + PADDING) + j;}
+	int map(int i, int j)const { return i * (rows + PADDING) + j;}
 	//Reverse the mapping
 	int unmapi(int index){ return index / (rows + PADDING);}
 	int unmapj(int index){ return index % (rows + PADDING);}
 };
+
+std::ostream& operator<<(std::ostream& out, const Hex& board);

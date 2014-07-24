@@ -2,25 +2,24 @@
 #include <iostream>
 #include <ctime>
 
-using namespace std;
 void randomizeBoard(Hex &board){ }
 
 void printInstructions(){
-	cout << "How to play:\n";
-	cout << "Specify i j to place your piece. i are columns, j rows. Don't use commas.\n";
-	cout << "Pie rule is in place, meaning whoever goes first can get their fist move stolen by\n";
-	cout <<	"the other player.\n";
-	cout << endl;
+	std::cout << "How to play:\n";
+	std::cout << "Specify i j to place your piece. i are columns, j rows. Don't use commas.\n";
+	std::cout << "Pie rule is in place, meaning whoever goes first can get their fist\n";
+	std::cout << "move stolen by the other player.\n";
+	std::cout << std::endl;
 }
 
 void readInput(int &x){
 	while(true){
-		if(cin >> x)
+		if(std::cin >> x)
 			break;
 		else {
-			cout << "Not a Number. Try again." << endl;
-			cin.clear();
-			cin.ignore();			
+			std::cout << "Not a Number. Try again." << std::endl;
+			std::cin.clear();
+			std::cin.ignore();			
 		}
 	}
 }
@@ -28,7 +27,7 @@ void readInput(int &x){
 //Game loop.
 void goFirst(int rows, int simulations){
 	Hex game(rows);
-	game.printBoard();
+	std::cout << game << std::endl;
 	int i,j;
 	while(true){
 		readInput(i);
@@ -38,11 +37,11 @@ void goFirst(int rows, int simulations){
 			readInput(i);
 			readInput(j);
 		}
-		game.printBoard();
+		std::cout << game << std::endl;
 		if(game.checkWin(1))
 			break;
 		game.computerMoveMC(2, simulations); //is guaranteed to be valid
-		game.printBoard();
+		std::cout << game << std::endl;
 		if(game.checkWin(2))
 			break;
 	}
@@ -51,11 +50,11 @@ void goFirst(int rows, int simulations){
 
 void goSecond(int rows, int simulations){
 	Hex game(rows);
-	game.printBoard();
+	std::cout << game << std::endl;
 	int i,j;
 	while(true){
 		game.computerMoveMC(2, simulations);
- 		game.printBoard();
+ 		std::cout << game << std::endl;
  		if(game.checkWin(2))
 			break;
 		readInput(i);
@@ -64,7 +63,7 @@ void goSecond(int rows, int simulations){
 			readInput(i);
 			readInput(j);
 		}
-		game.printBoard();
+		std::cout << game << std::endl;
 		if(game.checkWin(1))
 			break;
 	}
@@ -75,17 +74,17 @@ int main(int argc, const char* arg[]){
 	srand ( unsigned ( std::time(0) ) );
 	printInstructions();
 	int rows;
-	cout << "What board size do you want?" << endl;
+	std::cout << "What board size do you want?" << std::endl;
 	readInput(rows);
 
 	char first;
-	cout << "Would you like to go first (y/n)?. First player is X, second is O" << endl;
-	cin >> first;
+	std::cout << "Would you like to go first (y/n)?. First player is X, second is O" << std::endl;
+	std::cin >> first;
 
 	if(first == 'y')
 		goFirst(rows, simulations);
 	else
 		goSecond(rows, simulations);
-	cin.get();
-	cin.get();
+	std::cin.get();
+	std::cin.get();
 }
