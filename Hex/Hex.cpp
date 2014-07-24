@@ -99,7 +99,7 @@ Hex::Hex(const Hex& other){
 	//copy other tiles by value
 	boardTiles = other.boardTiles;
 	pieRule = other.pieRule;
-	previousMove = other.previousMove;
+	previousMoveIndex = other.previousMoveIndex;
 	rows = other.rows;
 	columns = other.columns; 
 	turn = other.turn;
@@ -176,7 +176,7 @@ bool Hex::markBoard(TileType tileType, int i, int j){
 			board->updateEdge(thisTile, thatTile, (Graph::EdgeKey)tileType, 0.0f);
 		}
 	}
-	previousMove = thisTile;
+	previousMoveIndex = thisTile;
 	return true;
 }
 
@@ -229,7 +229,7 @@ void Hex::computerMove(TileType tileType){
 		return;
 	}
 
-	std::vector<int> sorroundingTiles = board->getNeighbors(previousMove);
+	std::vector<int> sorroundingTiles = board->getNeighbors(previousMoveIndex);
 	//originally tiles are worth nothing.
 	const int MAX_TILES = 6;
 	std::vector<int> tileValues = std::vector<int>(MAX_TILES, -1);

@@ -9,6 +9,7 @@ class Hex{
 public:
 	Hex(int rows = 11, bool pieRule = true); explicit
 	Hex(const Hex& other);
+	//Since we can't use colors like in real Hex, these are the types of tiles available.
 	enum TileType{Empty = 0, X, O, Invalid};
 	int getSize() const {return rows;}
 	bool markBoard(TileType tileType, int i, int j);
@@ -26,7 +27,7 @@ private:
 
 	Graph* board;
 	int boardSize;
-	int previousMove;
+	int previousMoveIndex;
 	int rows;
 	int columns; //same as above
 	int turn; //determines whose player's turn it is in order to check legality of move.

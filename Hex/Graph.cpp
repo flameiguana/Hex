@@ -1,5 +1,7 @@
 #include "Graph.h"
 
+const float Graph::INFINITE_D = std::numeric_limits<float>::infinity();
+
 class Graph::Edge{
 public:
 	int source;

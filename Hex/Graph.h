@@ -6,17 +6,16 @@
 #include <list>
 #include <string>
 #include <algorithm> 
+#include <limits>
 
 #include "DisjointSet.h"
-
-#define INFINITE_D 100000 //TODO change to the max value of float.
-#define NIL -2
-
 
 class Graph
 {
 public:
 	typedef int EdgeKey; //similar to assigning a color to an edge
+	static const float INFINITE_D; //infinite distance
+	static const int NIL = -2;
 	//Order equals the total number of vertices.
 	Graph(int order); explicit
 	Graph(const Graph& other);
