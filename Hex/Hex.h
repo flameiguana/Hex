@@ -42,3 +42,4 @@ private:
 };
 
 std::ostream& operator<<(std::ostream& out, const Hex& board);
+std::ostream& operator<<(std::ostream& out, const Hex::TileType& tileType);

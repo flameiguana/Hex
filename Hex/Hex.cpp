@@ -35,19 +35,6 @@ public:
 			type = Invalid;
 		}
 	}
-	//TODO: move this outside of class
-	char getPlayerChar() const{
-		switch(type){
-			case Empty:
-				return ' ';
-			case X:
-				return 'X';
-			case O:
-				return 'O';
-			case Invalid:
-				return '#';
-		}
-	}
 };
 
 
@@ -386,7 +373,7 @@ void Hex::printBoard(std::ostream& out) const{
 		//Print the actual values in the tiles.
 		for(int i = 0; i < (rows + PADDING); i++){
 			const Tile& tile = boardTiles.at(map(i,j));
-			out << tile.getPlayerChar();
+			out << tile.type;
 			out << " | ";
 		}
 		out << std::endl;
@@ -408,6 +395,24 @@ std::ostream& operator<<(std::ostream& out, const Hex& board)
 	return out;
 }
 
+std::ostream& operator<<(std::ostream& out, const Hex::TileType& tileType)
+{
+	switch(tileType){
+		case Hex::Empty:
+			out << ' ';
+			break;
+		case Hex::X:
+			out << 'X';
+			break;
+		case Hex::O:
+			out << 'O';
+			break;
+		case Hex::Invalid:
+			out << '#';
+			break;
+	}
+	return out;
+}
 //Apply delete on all pointers.
 Hex::~Hex(){
 	delete board;
