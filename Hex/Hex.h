@@ -9,18 +9,17 @@ class Hex{
 public:
 	Hex(int rows = 11, bool pieRule = true);
 	Hex(const Hex& other);
-	int getSize(){return rows;}
+	int getSize() const {return rows;}
 	bool markBoard(int playerNumber, int i, int j);
 	void computerMove(int playerNumber);
 	void printBoard(std::ostream& out) const;
-	bool checkWin(int playerNumber, bool printWinner = true);
+	bool checkWin (int playerNumber);
 	void computerMoveMC(int playerNumber, int simulations);
 	~Hex();
 private:
 	class Tile;
 	bool pieRule;
-	//The internal data structure for the board tiles, since my 
-	//graph class doesn't allow for template variables.
+	//The internal data structure for the board tiles.
 	std::vector<Tile> boardTiles;
 
 	Graph* board;

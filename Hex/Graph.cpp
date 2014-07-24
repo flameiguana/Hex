@@ -85,7 +85,7 @@ public:
 	}
 
 	void print(){
-		for(int i = 0; i < outEdges.size(); i++){
+		for(std::size_t i = 0; i < outEdges.size(); i++){
 			std::cout << " " << edgeColorToString(outEdges.at(i).color) << "[" << outEdges.at(i).distance << "]" << outEdges.at(i).destination;
 			if(i < outEdges.size() -1)
 				std::cout << ",";
@@ -123,13 +123,12 @@ Graph::Graph(const std::string &graphFilename):totalWeight(0.0){
 
 	int u, v, colorInt;
 	float cost;
-	EdgeColor color;
 	while(!file.eof()){
 		file>>u;
 		file>>v;
 		file>>cost;
 		file>>colorInt;
-		addEdge(u, v, cost, (EdgeColor)colorInt);
+		addEdge(u, v, (EdgeColor)colorInt, cost);
 	}
 	file.close();
 }
@@ -139,12 +138,12 @@ Graph::Graph(const Graph& other){
 	totalWeight = other.totalWeight;
 	source = other.source;
 	vertexList.reserve(order);
-	for(int i = 0;  i <  other.vertexList.size(); i++)
+	for(std::size_t i = 0;  i <  other.vertexList.size(); i++)
 		vertexList.push_back(new Vertex(*other.vertexList.at(i)));
 }
 
 
-void Graph::addEdge(int from, int to, float distance, EdgeColor color){
+void Graph::addEdge(int from, int to, EdgeColor color, float distance){
 	if(from > order || to > order || from < 0 || to < 0){
 		std::cout << "Error: Out of range." << std::endl;
 		exit(1);
@@ -157,7 +156,7 @@ void Graph::addEdge(int from, int to, float distance, EdgeColor color){
 	(*vertexList.at(to)).addEdge(from, distance, color);
 }
 
-void Graph::updateEdge(int from, int to, float distance, EdgeColor color){
+void Graph::updateEdge(int from, int to, EdgeColor color, float distance){
 	totalWeight += distance;
 	totalWeight = totalWeight - vertexList.at(from)->updateEdge(to, distance, color);
 	vertexList.at(to)->updateEdge(from, distance, color);
@@ -326,7 +325,7 @@ void Graph::printPath(int destination){
 	if(buildPath(list, destination) == false)
 		std::cout << "Path not found." << std::endl;
 	else{
-		for(int i = 0; i < list.size(); i++){
+		for(std::size_t i = 0; i < list.size(); i++){
 			std::cout << list.at(i) << " ";
 		}
 		std::cout << std::endl;
@@ -364,10 +363,10 @@ void Graph::MST(EdgeColor a, EdgeColor b){
 	}
 	Graph minimum(order);
 	DisjointSet set(order);
-	for(int u = 0; u < vertexList.size(); u++){
+	for(std::size_t u = 0; u < vertexList.size(); u++){
 		set.makeSet(u);
 		//create a single vector of all edges.
-		for(int j = 0; j < vertexList.at(u)->outEdges.size(); j++){
+		for(std::size_t j = 0; j < vertexList.at(u)->outEdges.size(); j++){
 			edgeList.push_back(&vertexList.at(u)->outEdges.at(j));
 		}
 	}
@@ -375,7 +374,7 @@ void Graph::MST(EdgeColor a, EdgeColor b){
 	//sort every edge
 	std::sort(edgeList.begin(), edgeList.end(), Graph::compareEdges);
 
-	for(int i = 0; i < edgeList.size(); i++){
+	for(std::size_t i = 0; i < edgeList.size(); i++){
 		int u = (*edgeList.at(i)).source;
 		int v = (*edgeList.at(i)).destination;
 		EdgeColor color = (*edgeList.at(i)).color;
@@ -397,7 +396,7 @@ void Graph::MST(EdgeColor a, EdgeColor b){
 }
 
 void Graph::print(){
-	for (int i = 0; i < vertexList.size(); i++) {
+	for (std::size_t i = 0; i < vertexList.size(); i++) {
 		std::cout << i << ": ";
 		(*vertexList.at(i)).print();
 	}

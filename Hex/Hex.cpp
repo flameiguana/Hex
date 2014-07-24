@@ -12,7 +12,8 @@ public:
 	int i, j;
 
 	Tile():playerNumber(0),i(0),j(0)
-		{};
+	{};
+
 	Tile(int i, int j, int rows):i(i),j(j)
 	{
 		int columns = rows;
@@ -87,11 +88,11 @@ Hex::Hex(int rows, bool pieRule):rows(rows),columns(rows),turn(0),pieRule(pieRul
 			//Connect to tile below this one and to tile to the right.
 			int mapping = map(i,j);
 			if(j > 0  && i < columns + PADDING - 1)
-				board->addEdge(mapping, map(i + 1, j - 1), 0.0f, Graph::GREEN); //One
+				board->addEdge(mapping, map(i + 1, j - 1), Graph::GREEN); //One
 			if(i < columns + PADDING - 1)
-				board->addEdge(mapping, map(i + 1, j),0.0f,  Graph::GREEN); //Two
+				board->addEdge(mapping, map(i + 1, j), Graph::GREEN); //Two
 			if(j < rows + PADDING - 1)
-				board->addEdge(mapping, map(i, j + 1), 0.0f, Graph::GREEN); //Three
+				board->addEdge(mapping, map(i, j + 1), Graph::GREEN); //Three
 			//Instead I create an array of tiles.
 			boardTiles.insert(boardTiles.begin() + mapping, Tile(i, j, rows));
 		}
@@ -101,13 +102,12 @@ Hex::Hex(int rows, bool pieRule):rows(rows),columns(rows),turn(0),pieRule(pieRul
 	int lastIndex = columns + PADDING - 1;
 	for(int x = 1; x < rows + PADDING - 2 ; x++){
 			//Top and bottom are red.
-			board->updateEdge(map(x, 0), map(x + 1, 0), 0.0f, Graph::RED);
-			board->updateEdge(map(x, lastIndex), map(x + 1, lastIndex), 0.0f, Graph::RED);
+			board->updateEdge(map(x, 0), map(x + 1, 0), Graph::RED);
+			board->updateEdge(map(x, lastIndex), map(x + 1, lastIndex), Graph::RED);
 			//Left and right are blue.
-			board->updateEdge(map(0, x), map(0, x + 1), 0.0f, Graph::BLUE);
-			board->updateEdge(map(lastIndex, x), map(lastIndex, x + 1), 0.0f, Graph::BLUE);
+			board->updateEdge(map(0, x), map(0, x + 1), Graph::BLUE);
+			board->updateEdge(map(lastIndex, x), map(lastIndex, x + 1),Graph::BLUE);
 	}
-	
 }
 
 //DEEP copy
@@ -130,7 +130,7 @@ From any edgeTile, there is a path from this tile to another edgeTile.
 There is no path when a tile is of a different color than the player tile (either blank or the other player colors).
 */
 
-bool Hex::checkWin(int playerNumber, bool printWinner){
+bool Hex::checkWin(int playerNumber){
 	if(turn < rows) //It is impossible to win at this turn.
 		return false;
 	std::vector<int> path;
@@ -144,13 +144,8 @@ bool Hex::checkWin(int playerNumber, bool printWinner){
 			for(int x = 0; x < path.size(); x++){
 				std::cout << "( " << unmapi(path.at(x)) << ", " << unmapj(path.at(x)) << " )";
 			}*/
-			if(printWinner){
-				std::cout << std::endl;
-				std::cout << "Player 1 Wins" << std::endl;
-			}
 			return true;
 		}
-		else path.clear();
 	}
 
 	else if(playerNumber == 2){
@@ -161,13 +156,8 @@ bool Hex::checkWin(int playerNumber, bool printWinner){
 			for(int x = 0; x < path.size(); x++){
 				std::cout << "( " << unmapi(path.at(x)) << ", " << unmapj(path.at(x)) << " )";
 			}*/
-			if(printWinner){
-				std::cout << std::endl;
-				std::cout << "Player 2 Wins" << std::endl;
-			}
 			return true;
-			}
-		else path.clear();
+		}
 	} 
 	return false;
 }
@@ -181,7 +171,7 @@ bool Hex::checkWin(int playerNumber, bool printWinner){
 bool Hex::markBoard(int playerNumber, int i, int j){
 	//check for valid index
 	if(i > columns - 1 || j < 0 ||  j > rows - 1 || j < 0){
-		std::cout << "Invalid Move: Out of Range " << i  << ", " << j << std::endl;
+		std::cerr << "Invalid Move: Out of Range " << i  << ", " << j << std::endl;
 		return false;
 	}
 	//convert to internal representation (skip top and left sets of nodes)
@@ -192,20 +182,21 @@ bool Hex::markBoard(int playerNumber, int i, int j){
 	Tile& tile = boardTiles.at(thisTile);
 	//Check if a player is already there. Take into account pie rule.
 	if(tile.playerNumber != 0 && !(pieRule && turn == 1)){
-		std::cout << "Invalid Move: Position Already Taken " << i -1 << ", " << j -1<< std::endl;
+		std::cerr << "Invalid Move: Position Already Taken " << i -1 << ", " << j -1<< std::endl;
 		return false;
 	}
 	turn++;
 	tile.playerNumber = playerNumber;
 	std::vector<int> sorroundingTiles = board->getNeighbors(thisTile);
-	for(int i = 0; i < sorroundingTiles.size(); i++){
-		int thatTile = sorroundingTiles.at(i);
+	std::vector<int>::iterator it;
+	for(it = sorroundingTiles.begin(); it != sorroundingTiles.end(); ++it){
+		int thatTile = *it;
 		if(playerNumber == boardTiles.at(thatTile).playerNumber){
 			Graph::EdgeColor color;
 			if(playerNumber == 1)
 				color = Graph::BLUE;
 			else color =  Graph::RED;
-			board->updateEdge(thisTile, thatTile, 0.0f, color);
+			board->updateEdge(thisTile, thatTile, color, 0.0f);
 		}
 	}
 	previousMove = thisTile;
@@ -223,8 +214,9 @@ int Hex::evaluateTile(int index, int playerNumber){
 	if(tile.playerNumber == 0){
 		value++;
 		std::vector<int> neighbors = board->getNeighbors(index);
-		for(int i = 0; i < neighbors.size(); i++){
-			Tile& neighborTile = boardTiles.at(neighbors.at(i));
+		std::vector<int>::iterator it;
+		for(it = neighbors.begin(); it != neighbors.end(); ++it){
+			Tile& neighborTile = boardTiles.at(*it);
 			if(neighborTile.playerNumber == playerNumber)
 				value += 3;
 			else if(neighborTile.playerNumber != 3 && neighborTile.playerNumber != 0)
@@ -243,8 +235,6 @@ int Hex::evaluateTile(int index, int playerNumber){
 //have an array of playable tile indices
 //have an array of value for each index
 void Hex::computerMove(int playerNumber){
-	
-	std::cout << "Waiting for AI..." << std::endl;
 	//if AI goes first.
 	if(turn == 0){
 		//put somewhere random
@@ -272,9 +262,10 @@ void Hex::computerMove(int playerNumber){
 	int maxValue = *it;
 	//No playable tile was found. Find first empty tile. Ideally would want next best tile.
 	if (maxValue == -1){
-		for(int i = 0; i < boardTiles.size(); i ++){
-			if(boardTiles.at(i).playerNumber == 0){
-				markBoard(playerNumber, boardTiles.at(i).i - 1, boardTiles.at(i).j - 1);
+		std::vector<Tile>::iterator it;
+		for(it = boardTiles.begin(); it != boardTiles.end(); ++it){
+			if((*it).playerNumber == 0){
+				markBoard(playerNumber, (*it).i - 1, (*it).j - 1);
 				return;
 			}
 		}
@@ -297,13 +288,10 @@ void Hex::computerMove(int playerNumber){
 */
 
 void Hex::computerMoveMC(int playerNumber, int simulations){
-	std::cout << "Waiting for AI..." << std::endl;
-
 	std::vector<float> timesWon(boardSize, 0.0f);
 	std::vector<float> timesPlayed(boardSize, 0.0f);
 
-	//Find which tiles are empty. I tried keeping a list and deleting the tile when a piece
-	// was placed there but iterators get invalidated and shit.
+	//Find which tiles are empty.
 	std::vector<int> emptyTiles;
 	for(int i = 0; i < boardSize; i++){
 		if(boardTiles.at(i).playerNumber == 0)
@@ -327,7 +315,7 @@ void Hex::computerMoveMC(int playerNumber, int simulations){
 			//swap player colors
 			playerMove = playerMove == 1 ? 2 : 1;
 		}
-		if(boardCopy.checkWin(playerNumber, false))
+		if(boardCopy.checkWin(playerNumber))
 			timesWon.at(firstMove) = timesWon.at(firstMove) + 1.0f;
 	}
 

@@ -36,8 +36,8 @@ public:
 	void MST(EdgeColor a = ALL, EdgeColor b = ALL);
 	void DFS(int node);
 	/*Add an edge using integers as indices.*/
-	void addEdge(int from, int to, float distance, EdgeColor color);
-	void updateEdge(int from, int to, float distance, EdgeColor color);
+	void addEdge(int from, int to, EdgeColor color, float distance = 0.0f);
+	void updateEdge(int from, int to, EdgeColor color, float distance = 0.0f);
 	void removeEdge(int from, int to);
 	std::vector<int> getNeighbors(int from);
 	void addArc(int from, int to, float distance, EdgeColor color);
