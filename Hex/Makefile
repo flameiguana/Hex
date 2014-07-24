@@ -1,7 +1,7 @@
-GPP          = g++ -g -O3
+GPP          = g++ -O3 -Wall -Wextra
 
 EXECBIN      = hex
-CPPSOURCE    = main.cpp Graph.cpp DisjointSet.cpp Hex.cpp
+CPPSOURCE    = main.cpp adt/Graph.cpp adt/DisjointSet.cpp Hex.cpp
 CPPHEADER    = Graph.h DisjointSet.h Hex.h
 OBJECTS      = ${CPPSOURCE:.cpp=.o}
 

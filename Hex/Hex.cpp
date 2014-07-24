@@ -1,21 +1,5 @@
 #include "Hex.h"
 
-
-/*
-	
-*/
-struct Hex::Tile{
-public:
-	TileType type;
-	int i;
-	int j;
-
-	Tile():type(Empty),i(0),j(0)
-	{};
-
-	Tile(TileType type, int i, int j):type(type),i(i),j(j){}
-};
-
 //Determine initial type of tile based on layout of hex board. 
 //Only used in constructor
 Hex::TileType Hex::typeFromCoords(int i, int j) const{
@@ -36,7 +20,6 @@ Hex::TileType Hex::typeFromCoords(int i, int j) const{
 		if(left_right && top_bottom){
 			type = Invalid;
 		}
-
 		return type;
 }
 /*
@@ -60,21 +43,26 @@ Hex::TileType Hex::typeFromCoords(int i, int j) const{
 * This guarantees that every playable tile has six connections.
 * The special edge tiles always coonect to each other.
 */
-
-Hex::Hex(int rows, bool pieRule):rows(rows),columns(rows),turn(0),pieRule(pieRule){
-	boardSize = (rows + PADDING) * (columns + PADDING);
-	board = new Graph(boardSize);
+using namespace adt;
+Hex::Hex(int rows, bool pieRule):
+	rows(rows),
+	columns(rows),
+	boardSize((rows + PADDING) * (columns + PADDING)),
+	board(boardSize),
+	turn(0),
+	pieRule(pieRule)
+{
 	boardTiles.resize(boardSize);
 	for(int i = 0; i < columns + PADDING; i++){ //Don't try to connect past these nodes
 		for(int j = 0; j < rows + PADDING; j++){
 			//Connect to tile below this one and to tile to the right.
 			int mapping = map(i,j);
 			if(j > 0  && i < columns + PADDING - 1)
-				board->addEdge(mapping, map(i + 1, j - 1), (Graph::EdgeKey)Empty); //One
+				board.addEdge(mapping, map(i + 1, j - 1), (Graph::EdgeKey)Empty); //One
 			if(i < columns + PADDING - 1)
-				board->addEdge(mapping, map(i + 1, j), (Graph::EdgeKey)Empty); //Two
+				board.addEdge(mapping, map(i + 1, j), (Graph::EdgeKey)Empty); //Two
 			if(j < rows + PADDING - 1)
-				board->addEdge(mapping, map(i, j + 1), (Graph::EdgeKey)Empty); //Three
+				board.addEdge(mapping, map(i, j + 1), (Graph::EdgeKey)Empty); //Three
 			//Instead I create an array of tiles.
 			boardTiles.insert(boardTiles.begin() + mapping, Tile(typeFromCoords(i, j), i, j));
 		}
@@ -84,27 +72,14 @@ Hex::Hex(int rows, bool pieRule):rows(rows),columns(rows),turn(0),pieRule(pieRul
 	int lastIndex = columns + PADDING - 1;
 	for(int x = 1; x < rows + PADDING - 2 ; x++){
 			//Top and bottom are O.
-			board->updateEdge(map(x, 0), map(x + 1, 0), (Graph::EdgeKey)O);
-			board->updateEdge(map(x, lastIndex), map(x + 1, lastIndex), (Graph::EdgeKey)O);
+			board.updateEdge(map(x, 0), map(x + 1, 0), (Graph::EdgeKey)O);
+			board.updateEdge(map(x, lastIndex), map(x + 1, lastIndex), (Graph::EdgeKey)O);
 			//Left and right are X.
-			board->updateEdge(map(0, x), map(0, x + 1), (Graph::EdgeKey)X);
-			board->updateEdge(map(lastIndex, x), map(lastIndex, x + 1),(Graph::EdgeKey)X);
+			board.updateEdge(map(0, x), map(0, x + 1), (Graph::EdgeKey)X);
+			board.updateEdge(map(lastIndex, x), map(lastIndex, x + 1),(Graph::EdgeKey)X);
 	}
 }
 
-//DEEP copy
-Hex::Hex(const Hex& other){
-	boardSize = other.boardSize;
-	board = new Graph(*other.board);
-	boardTiles.resize(boardSize);
-	//copy other tiles by value
-	boardTiles = other.boardTiles;
-	pieRule = other.pieRule;
-	previousMoveIndex = other.previousMoveIndex;
-	rows = other.rows;
-	columns = other.columns; 
-	turn = other.turn;
-}
 
 /*
 Win Conditions:
@@ -120,9 +95,9 @@ bool Hex::checkWin(TileType tileType){
 	if(tileType == X){ 
 		//Pick the topmost X tile on the left side as the source. Note that any of these nodes would do.
 		//Pick the topmost X tile on the right side as the destination.
-		board->performBFS(map(0, 1), (Graph::EdgeKey)X); 
+		board.performBFS(map(0, 1), (Graph::EdgeKey)X); 
 		//If there is a path, then X player (player 1) wins.
-		if(board->buildPath(path, map(columns + PADDING - 1, 1))){
+		if(board.buildPath(path, map(columns + PADDING - 1, 1))){
 			/*For debugging:
 			for(int x = 0; x < path.size(); x++){
 				std::cout << "( " << unmapi(path.at(x)) << ", " << unmapj(path.at(x)) << " )";
@@ -132,8 +107,8 @@ bool Hex::checkWin(TileType tileType){
 	}
 	else if(tileType == O){
 		//Similar to above, but pick two O tiles from both sides of board.
-		board->performBFS(map(1, 0), (Graph::EdgeKey)O);
-		if(board->buildPath(path, map(1, rows + PADDING - 1))){
+		board.performBFS(map(1, 0), (Graph::EdgeKey)O);
+		if(board.buildPath(path, map(1, rows + PADDING - 1))){
 			/*
 			for(int x = 0; x < path.size(); x++){
 				std::cout << "( " << unmapi(path.at(x)) << ", " << unmapj(path.at(x)) << " )";
@@ -169,12 +144,12 @@ bool Hex::markBoard(TileType tileType, int i, int j){
 	}
 	turn++;
 	tile.type = tileType;
-	std::vector<int> sorroundingTiles = board->getNeighbors(thisTile);
+	std::vector<int> sorroundingTiles = board.getNeighbors(thisTile);
 	std::vector<int>::iterator it;
 	for(it = sorroundingTiles.begin(); it != sorroundingTiles.end(); ++it){
 		int thatTile = *it;
 		if(tileType == boardTiles.at(thatTile).type){
-			board->updateEdge(thisTile, thatTile, (Graph::EdgeKey)tileType, 0.0f);
+			board.updateEdge(thisTile, thatTile, (Graph::EdgeKey)tileType, 0.0f);
 		}
 	}
 	previousMoveIndex = thisTile;
@@ -194,7 +169,7 @@ int Hex::evaluateTile(int index, TileType tileType) const{
 	const Tile& tile = boardTiles.at(index);
 	if(tile.type == Empty){
 		value++;
-		std::vector<int> neighbors = board->getNeighbors(index);
+		std::vector<int> neighbors = board.getNeighbors(index);
 		std::vector<int>::iterator it;
 		for(it = neighbors.begin(); it != neighbors.end(); ++it){
 			const Tile& neighborTile = boardTiles.at(*it);
@@ -230,7 +205,7 @@ void Hex::computerMove(TileType tileType){
 		return;
 	}
 
-	std::vector<int> sorroundingTiles = board->getNeighbors(previousMoveIndex);
+	std::vector<int> sorroundingTiles = board.getNeighbors(previousMoveIndex);
 	//originally tiles are worth nothing.
 	const int MAX_TILES = 6;
 	std::vector<int> tileValues = std::vector<int>(MAX_TILES, -1);
@@ -278,25 +253,24 @@ void Hex::computerMoveMC(TileType tileType, int simulations){
 	std::vector<int> emptyTiles;
 	for(int i = 0; i < boardSize; i++){
 		if(boardTiles.at(i).type == Empty)
-			emptyTiles.push_back(i);
+			emptyTiles.push_back(i); //store index of tile
 	}
 
 	//run fake games for the desired number of simulations.
 	for(int simID = 0; simID < simulations; simID++){
-		Hex boardCopy(*this);
+		Hex boardCopy(*this); //default copy constructor is fine
 		std::random_shuffle(emptyTiles.begin(), emptyTiles.end());
 		int firstMove = emptyTiles.front();
-		timesPlayed.at(firstMove) = timesPlayed.at(firstMove) + 1;
+		timesPlayed.at(firstMove) = timesPlayed.at(firstMove) + 1.0f;
 
 		//simulates switching players
-		int playerMove = (int)tileType;
-		int otherPlayer = playerMove == 1 ? 2 : 1;
+		TileType playerMove = tileType;
 
-		std::vector<int>::iterator i;
-		for(i = emptyTiles.begin(); i != emptyTiles.end(); i++){
-			boardCopy.markBoard((TileType)playerMove, unmapi(*i) - 1, unmapj(*i) - 1);
+		std::vector<int>::iterator it;
+		for(it = emptyTiles.begin(); it != emptyTiles.end(); it++){
+			boardCopy.markBoard((TileType)playerMove, unmapi(*it) - 1, unmapj(*it) - 1);
 			//swap player colors
-			playerMove = playerMove == 1 ? 2 : 1;
+			playerMove = playerMove == X ? O : X;
 		}
 		if(boardCopy.checkWin(tileType))
 			timesWon.at(firstMove) = timesWon.at(firstMove) + 1.0f;
@@ -363,8 +337,8 @@ void Hex::printBoard(std::ostream& out) const{
 	printTop(out, rows + PADDING, spacing);
 
 	for(int j = 0; j < (columns + PADDING); j++){
-		int removeSpacing = 1;
-		if(j > 9)
+		int removeSpacing = 1; //want to allow room for digits to fit without shifting row
+		if(j > 9 && j < rows)
 			removeSpacing = 2;
 
 		out << std::string(spacing - removeSpacing, ' '); //Substitute a space with row index.
@@ -389,7 +363,7 @@ void Hex::printBoard(std::ostream& out) const{
 
 		spacing += 2;
 	}
-	//board->print(out); prints the graph representation
+	//board.print(out); prints the graph representation
 }
 
 std::ostream& operator<<(std::ostream& out, const Hex& board)
@@ -415,8 +389,4 @@ std::ostream& operator<<(std::ostream& out, const Hex::TileType& tileType)
 			break;
 	}
 	return out;
-}
-//Apply delete on all pointers.
-Hex::~Hex(){
-	delete board;
 }

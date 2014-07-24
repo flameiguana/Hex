@@ -65,14 +65,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="DisjointSet.h" />
-    <ClInclude Include="Graph.h" />
+    <ClInclude Include="adt\DisjointSet.h" />
+    <ClInclude Include="adt\Graph.h" />
     <ClInclude Include="Hex.h" />
     <ClInclude Include="main.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="DisjointSet.cpp" />
-    <ClCompile Include="Graph.cpp" />
+    <ClCompile Include="adt\DisjointSet.cpp" />
+    <ClCompile Include="adt\Graph.cpp" />
     <ClCompile Include="Hex.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
