@@ -33,9 +33,10 @@ namespace adt{
 			totalNeighbors++;
 		}
 		std::vector<int> getNeighbors() const{
-			std::vector<int> neighborIndices;
+			std::vector<int> neighborIndices(totalNeighbors);
+
 			for(int i = 0; i < totalNeighbors; i++){
-				neighborIndices.push_back(outEdges.at(i).destination);
+				neighborIndices[i] = outEdges.at(i).destination;
 			}
 			return neighborIndices;
 		}
@@ -94,7 +95,6 @@ namespace adt{
 		//Resize vector to a specific memory size, for efficiency.
 		vertexList.reserve(order);
 		for(int i = 0; i < order; i++){
-			//Vertex temp(i);
 			vertexList.push_back(new Vertex(i));
 		}
 	}
@@ -124,10 +124,12 @@ namespace adt{
 		file.close();
 	}
 
-	Graph::Graph(const Graph& other){
-		order = other.order;
-		totalWeight = other.totalWeight;
-		source = other.source;
+	Graph::Graph(const Graph& other):
+		order(other.order),
+		totalWeight(other.totalWeight),
+		source(other.source)
+	{
+
 		vertexList.reserve(order);
 		for(std::size_t i = 0;  i <  other.vertexList.size(); i++)
 			vertexList.push_back(new Vertex(*other.vertexList.at(i)));

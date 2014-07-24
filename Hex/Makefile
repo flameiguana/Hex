@@ -14,4 +14,4 @@ ${EXECBIN} : ${OBJECTS}
 	${GPP} -c $<
 
 clean :
-	- rm ${OBJECTS}
+	- rm *.o

@@ -1,6 +1,7 @@
 #include "Hex.h"
 #include <iostream>
 #include <ctime>
+#include <cstdlib>
 
 void printInstructions(){
 	std::cout << "How to play:\n";
@@ -64,24 +65,36 @@ void playGame(int rows, int simulations, bool humanFirst){
 
 
 
-int main(int argc, const char* arg[]){
+int main(int argc, const char* argv[]){
 	//sounded good at the time. dont try running this many simulations in debug mode
-	const int simulations = 25000;
-	printInstructions();
+	int simulations = 22000;
 
+	if(argc > 1)
+	{
+		int userSims = std::atoi(argv[1]);
+		if(userSims <= 0)
+		{
+			std::cerr << "Error: Invalid argument" << std::endl;
+			return EXIT_FAILURE;
+		}
+
+		simulations = userSims;
+	}
+	printInstructions();
 	int rows;
 	std::cout << "What board size do you want?" << std::endl;
 	readInput(rows);
-
 	char first;
 	std::cout << "Would you like to go first (y/n)?. First player is X, second is O" << std::endl;
 	std::cin >> first;
 
 	bool humanFirst = (first == 'y');
-		
+	//Play until someone wins.
 	playGame(rows, simulations, humanFirst);
 
 	std::cin.get();
 	std::cout << "Press 'Enter' to exit the game." << std::endl;
 	std::cin.get();
+
+	return EXIT_SUCCESS;
 }
