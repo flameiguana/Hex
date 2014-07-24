@@ -36,14 +36,14 @@ void playGame(int rows, int simulations, bool humanFirst){
 	while(true){
 		if(myTurn)
 		{
-			std::cout << "Enter Your Move: ";
-			readInput(i);
-			readInput(j);
 			//This will keep getting input until the move is valid.
-			while(!game.markBoard(playerMarker, i, j)){
+			do
+			{
+				std::cout << "Enter Your Move: ";
 				readInput(i);
 				readInput(j);
 			}
+			while(!game.markBoard(playerMarker, i, j));
 		}
 		else
 		{
