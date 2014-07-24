@@ -16,34 +16,33 @@
 class Graph
 {
 public:
-	typedef enum {RED = 0, GREEN, BLUE, ALL} EdgeColor;
-	static std::string edgeColorToString(EdgeColor color);
+	typedef int EdgeKey; //similar to assigning a color to an edge
 	//Order equals the total number of vertices.
-	Graph(int order);
+	Graph(int order); explicit
 	Graph(const Graph& other);
 	Graph(const std::string &graphFilename);
 	int getOrder(){return order;}
 	int getSource(){return source;}
 
 	/*Returns the average path length from the source vertex to all other vertices.
-	You can specify if you want the color to be taken into account.
+	You can specify if you want the key to be taken into account.
 	The source vertex is vertex 0 by default.*/
-	float averagePathLength(int _source = 0, EdgeColor colorA = ALL, EdgeColor colorB = ALL);
-	void calculateShortestPaths(int _source, EdgeColor colorA=ALL, EdgeColor colorB=ALL);
+	float averagePathLength(int sourceVertex = 0, EdgeKey keyA = 0, EdgeKey keyB = 0);
+	void calculateShortestPaths(int sourceVertex, EdgeKey keyA = 0, EdgeKey keyB = 0);
 	//Breadth first search.
-	void performBFS(int source, EdgeColor color = ALL);
+	void performBFS(int source, EdgeKey key = 0);
 	//Prints out Minimum Spanning Tree of graph, as well as the total weight.
-	void MST(EdgeColor a = ALL, EdgeColor b = ALL);
+	void MST(EdgeKey a = 0, EdgeKey b = 0);
 	void DFS(int node);
 	/*Add an edge using integers as indices.*/
-	void addEdge(int from, int to, EdgeColor color, float distance = 0.0f);
-	void updateEdge(int from, int to, EdgeColor color, float distance = 0.0f);
+	void addEdge(int from, int to, EdgeKey key, float distance = 0.0f);
+	void updateEdge(int from, int to, EdgeKey key, float distance = 0.0f);
 	void removeEdge(int from, int to);
 	std::vector<int> getNeighbors(int from);
-	void addArc(int from, int to, float distance, EdgeColor color);
-	bool buildPath(std::vector<int> &list, int dest); //Returns false
+	void addArc(int from, int to, float distance, EdgeKey key);
+	bool buildPath(std::vector<int> &list, int dest);
 	void printPath(int destination);
-	/*Print the graph along with its edge colors.*/
+	/*Print the graph along with its edge keys.*/
 	void print();
 	float getTotalWeight(){return totalWeight;};
 	~Graph();

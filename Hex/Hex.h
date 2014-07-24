@@ -7,14 +7,16 @@
 //Implementation explanations in Hex.cpp.
 class Hex{
 public:
-	Hex(int rows = 11, bool pieRule = true);
+	Hex(int rows = 11, bool pieRule = true); explicit
 	Hex(const Hex& other);
+	enum TileType{Empty = 0, X, O, Invalid};
 	int getSize() const {return rows;}
-	bool markBoard(int playerNumber, int i, int j);
-	void computerMove(int playerNumber);
+	bool markBoard(TileType tileType, int i, int j);
+	void computerMove(TileType tileType);
 	void printBoard(std::ostream& out) const;
-	bool checkWin (int playerNumber);
-	void computerMoveMC(int playerNumber, int simulations);
+	bool checkWin (TileType tileType);
+	void computerMoveMC(TileType tileType, int simulations);
+
 	~Hex();
 private:
 	class Tile;
@@ -29,13 +31,14 @@ private:
 	int columns; //same as above
 	int turn; //determines whose player's turn it is in order to check legality of move.
 	static const int PADDING = 2; //Extra rows and columns
+
+	int evaluateTile(int index, TileType tileType);
 	//This function takes coordinates and maps them onto unique indices
 	//of a 1d array (vector)
-	int evaluateTile(int index, int playerNumber);
 	int map(int i, int j)const { return i * (rows + PADDING) + j;}
 	//Reverse the mapping
-	int unmapi(int index){ return index / (rows + PADDING);}
-	int unmapj(int index){ return index % (rows + PADDING);}
+	int unmapi(int index) const { return index / (rows + PADDING);}
+	int unmapj(int index) const { return index % (rows + PADDING);}
 };
 
 std::ostream& operator<<(std::ostream& out, const Hex& board);

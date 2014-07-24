@@ -31,26 +31,25 @@ void goFirst(int rows, int simulations){
 		readInput(i);
 		readInput(j);
 		//This will keep getting input until the move is valid.
-		while(!game.markBoard(1, i, j)){
+		while(!game.markBoard((Hex::TileType)1, i, j)){
 			readInput(i);
 			readInput(j);
 		}
 		std::cout << game << std::endl;
-		if(game.checkWin(1))
+		if(game.checkWin((Hex::TileType)1))
 		{
 			std::cout << "Player 1 Wins" << std::endl;
 			break;
 		}
 			
 		std::cout << "Waiting for AI..." << std::endl;
-		game.computerMoveMC(2, simulations); //is guaranteed to be valid
+		game.computerMoveMC((Hex::TileType)2, simulations); //is guaranteed to be valid
 		std::cout << game << std::endl;
-		if(game.checkWin(2))
+		if(game.checkWin((Hex::TileType)2))
 		{
 			std::cout << "Player 2 Wins" << std::endl;
 			break;
 		}
-			
 	}
 }
 
@@ -61,21 +60,21 @@ void goSecond(int rows, int simulations){
 	int i,j;
 	while(true){
 		std::cout << "Waiting for AI..." << std::endl;
-		game.computerMoveMC(2, simulations);
+		game.computerMoveMC((Hex::TileType)2, simulations);
  		std::cout << game << std::endl;
-		if(game.checkWin(2))
+		if(game.checkWin((Hex::TileType)2))
 		{
 			std::cout << "Player 2 Wins" << std::endl;
 			break;
 		}
 		readInput(i);
 		readInput(j);
-		while(!game.markBoard(1, i, j)){
+		while(!game.markBoard((Hex::TileType)1, i, j)){
 			readInput(i);
 			readInput(j);
 		}
 		std::cout << game << std::endl;
-		if(game.checkWin(1))
+		if(game.checkWin((Hex::TileType)1))
 		{
 			std::cout << "Player 1 Wins" << std::endl;
 			break;
@@ -85,6 +84,7 @@ void goSecond(int rows, int simulations){
 
 int main(int argc, const char* arg[]){
 	int simulations = 25000;
+	//needed by hex
 	srand ( unsigned ( std::time(0) ) );
 	printInstructions();
 
@@ -102,6 +102,6 @@ int main(int argc, const char* arg[]){
 		goSecond(rows, simulations);
 
 	std::cin.get();
-	std::cout << "Press Enter to exit" << std::endl;
+	std::cout << "Press 'Enter' to exit the game." << std::endl;
 	std::cin.get();
 }

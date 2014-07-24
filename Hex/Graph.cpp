@@ -1,16 +1,4 @@
 #include "Graph.h"
-std::string Graph::edgeColorToString(EdgeColor color){
-	switch(color){
-		case RED:
-			return "R";
-		case GREEN:
-			return "G";
-		case BLUE:
-			return "B";
-		default:
-			return "A"; //any/all
-	}
-}
 
 class Graph::Edge{
 public:
@@ -19,8 +7,8 @@ public:
 	int destination;
 	//This is the distance between two vertices, aka weight.
 	float distance;
-	EdgeColor color;
-	Edge(int source, int destination, float distance, EdgeColor color):source(source),destination(destination),distance(distance),color(color)
+	EdgeKey key;
+	Edge(int source, int destination, float distance, EdgeKey key):source(source),destination(destination),distance(distance),key(key)
 	{}
 };
 
@@ -36,8 +24,8 @@ public:
 	int totalNeighbors;
 
 	Vertex(int index):visited(false),index(index),distFromSource(INFINITE_D), parent(NIL), totalNeighbors(0){}
-	void addEdge(int to, float distance, EdgeColor color){
-		Edge temp(index, to, distance, color);
+	void addEdge(int to, float distance, EdgeKey key){
+		Edge temp(index, to, distance, key);
 		outEdges.push_back(temp);
 		totalNeighbors++;
 	}
@@ -49,14 +37,14 @@ public:
 		return neighborIndices;
 	}
 
-	float updateEdge(int to, float distance, EdgeColor color){
+	float updateEdge(int to, float distance, EdgeKey key){
 		float oldDistance;
 		int i = 0;
 		while(i < totalNeighbors){
 			if(outEdges.at(i).destination == to){
 				oldDistance = outEdges.at(i).distance;
 				outEdges.at(i).distance = distance;
-				outEdges.at(i).color = color;
+				outEdges.at(i).key = key;
 				break;
 			}
 			i++;
@@ -86,7 +74,7 @@ public:
 
 	void print(){
 		for(std::size_t i = 0; i < outEdges.size(); i++){
-			std::cout << " " << edgeColorToString(outEdges.at(i).color) << "[" << outEdges.at(i).distance << "]" << outEdges.at(i).destination;
+			std::cout << " " << outEdges.at(i).key << "[" << outEdges.at(i).distance << "]" << outEdges.at(i).destination;
 			if(i < outEdges.size() -1)
 				std::cout << ",";
 		}
@@ -97,7 +85,7 @@ public:
 Graph::Graph(int order):order(order),totalWeight(0.0)
 {
 	if(order < 0){
-		std::cout << "Error: Out of range." << std::endl;
+		std::cerr << "Error: Out of range." << std::endl;
 		exit(1);
 	}
 	//Resize vector to a specific memory size, for efficiency.
@@ -121,14 +109,14 @@ Graph::Graph(const std::string &graphFilename):totalWeight(0.0){
 		vertexList.push_back(new Vertex(i));
 	}
 
-	int u, v, colorInt;
+	int u, v, keyInt;
 	float cost;
 	while(!file.eof()){
 		file>>u;
 		file>>v;
 		file>>cost;
-		file>>colorInt;
-		addEdge(u, v, (EdgeColor)colorInt, cost);
+		file>> keyInt;
+		addEdge(u, v, (EdgeKey)keyInt, cost);
 	}
 	file.close();
 }
@@ -143,23 +131,23 @@ Graph::Graph(const Graph& other){
 }
 
 
-void Graph::addEdge(int from, int to, EdgeColor color, float distance){
+void Graph::addEdge(int from, int to, EdgeKey key, float distance){
 	if(from > order || to > order || from < 0 || to < 0){
-		std::cout << "Error: Out of range." << std::endl;
+		std::cerr << "Error: Out of range." << std::endl;
 		exit(1);
 	}
 	totalWeight += distance;
 	//Connect origin to destination.
-	(*vertexList.at(from)).addEdge(to, distance, color);
+	(*vertexList.at(from)).addEdge(to, distance, key);
 
 	//Connnect destination to origin.
-	(*vertexList.at(to)).addEdge(from, distance, color);
+	(*vertexList.at(to)).addEdge(from, distance, key);
 }
 
-void Graph::updateEdge(int from, int to, EdgeColor color, float distance){
+void Graph::updateEdge(int from, int to, EdgeKey key, float distance){
 	totalWeight += distance;
-	totalWeight = totalWeight - vertexList.at(from)->updateEdge(to, distance, color);
-	vertexList.at(to)->updateEdge(from, distance, color);
+	totalWeight = totalWeight - vertexList.at(from)->updateEdge(to, distance, key);
+	vertexList.at(to)->updateEdge(from, distance, key);
 }
 
 void Graph::removeEdge(int from, int to){
@@ -168,13 +156,13 @@ void Graph::removeEdge(int from, int to){
 	vertexList.at(to)->removeEdge(from);
 }
 
-void Graph::addArc(int from, int to, float distance, EdgeColor color){
+void Graph::addArc(int from, int to, float distance, EdgeKey key){
 	if(from > order || to > order || from < 0 || to < 0){
-		std::cout << "Error: Out of range." << std::endl;
+		std::cerr << "Error: Out of range." << std::endl;
 		exit(1);
 	}
 	totalWeight += distance; //not so sure about this.
-	(*vertexList.at(from)).addEdge(to, distance, color);
+	(*vertexList.at(from)).addEdge(to, distance, key);
 }
 
 std::vector<int> Graph::getNeighbors(int from){
@@ -230,17 +218,17 @@ void Graph::relaxVertex(Vertex* u, Vertex* v, float distance){
 /*Runs Dijkstra's Algorithmn. All it does is modify properties of all vertices, giving them a parent,
 and setting distance from source so that the shortest possible paths are found. */
 
-//For hex game, need to use edge colors as neighbors, so that they can be specified in Dijkstra's
-//WARNING: Incorrect inplementation. It isn't used in this project so fixing is not urgent.
-void Graph::calculateShortestPaths(int _source, EdgeColor colorA, EdgeColor colorB){
+//For hex game, need to use edge keys as neighbors, so that they can be specified in Dijkstra's
+//TODO: Incorrect inplementation. It isn't used in this project so fixing is not urgent.
+void Graph::calculateShortestPaths(int sourceVertex, EdgeKey keyA, EdgeKey keyB){
 	resetVertices();  
-	bool ignoreColors = false;
-	if(colorA == ALL && colorB == ALL){
-		ignoreColors = true;
+	bool ignorekeys = false;
+	if(keyA == keyB){
+		ignorekeys = true;
 	}
 	//A queue of vertex pointers. Decided not to use priority_queue because it is unclear about when it uses comparator.
 	std::vector<Vertex*> Q;
-	source = _source;
+	source = sourceVertex;
 	//Set distance of source vertex to zero.
 	(*vertexList.at(source)).distFromSource = 0;
 	//TODO: This is wrong. Should only push back the source node, and find every node from, there. This way isolated nodes
@@ -256,9 +244,9 @@ void Graph::calculateShortestPaths(int _source, EdgeColor colorA, EdgeColor colo
 		Q.pop_back();
 		for(int i = 0; i < u.totalNeighbors; i++){
 			Edge v = (u).outEdges.at(i);
-			//Skip vertices of different color if a color was specified.
-			if(ignoreColors|| v.color == colorA || v.color == colorB || v.color == ALL){
-				//std::cout << edgeColorToString(v.color) << " ";
+			//Skip vertices of different key if a key was specified.
+			if(ignorekeys|| v.key == keyA || v.key == keyB){
+				//std::cout << v.key << " ";
 				//The Vertex pointers in both vectors (Graph::vertexList and Q) have same value.
 				relaxVertex(vertexList.at(u.index), vertexList.at(v.destination), v.distance);
 			}
@@ -270,10 +258,9 @@ void Graph::calculateShortestPaths(int _source, EdgeColor colorA, EdgeColor colo
 
 //Does not take into consideration edgeWeights.
 //Shortest path is based on number of edges from source.
-void Graph::performBFS(int source_, EdgeColor color){
+void Graph::performBFS(int sourceID, EdgeKey key){
 	resetVertices();
-	source = source_;
-	bool ignoreColors = color == ALL ? true : false;
+	source = sourceID;
 	std::queue<Vertex*> Q;
 	Vertex* sourceVertex = vertexList.at(source);
 	sourceVertex->visited = true;
@@ -284,7 +271,7 @@ void Graph::performBFS(int source_, EdgeColor color){
 		Q.pop();
 		for(int i = 0; i < u->totalNeighbors; i++){
 			Edge uv = u->outEdges.at(i);
-			if(!ignoreColors && uv.color != color)
+			if(uv.key != key)
 				continue;
 			Vertex* v = vertexList.at(uv.destination);
 			if(!v->visited){
@@ -332,12 +319,12 @@ void Graph::printPath(int destination){
 	}
 }
 
-float Graph::averagePathLength(int _source, EdgeColor colorA, EdgeColor colorB){
-	if(_source > order || _source < 0){
+float Graph::averagePathLength(int sourceVertex, EdgeKey keyA, EdgeKey keyB){
+	if(sourceVertex > order || sourceVertex < 0){
 		std::cout << "Error: Out of range." << std::endl;
 		exit(1);
 	}
-	calculateShortestPaths(_source, colorA, colorB);
+	calculateShortestPaths(sourceVertex, keyA, keyB);
 	float totalLength = 0.0;
 	float n = (float)order;
 	for(int i = 1; i < order; i++){
@@ -350,16 +337,12 @@ float Graph::averagePathLength(int _source, EdgeColor colorA, EdgeColor colorB){
 	return totalLength/(n - 1.0f);
 }
 
-//Kruskal's algorithmn
-//Unlike what it said in instructions, I thought it would make more sense to default to 
-//all colors when no colors are specified.
-
-
-void Graph::MST(EdgeColor a, EdgeColor b){
+//Kruskal's algorithmn. The assignment called for printng stuff, so it is void for now
+void Graph::MST(EdgeKey a, EdgeKey b){
 	std::vector<Edge*> edgeList; //The index will be from, it will hold an int called to.
-	bool ignoreColors = false;
-	if(a == ALL && b == ALL || a == b){
-		ignoreColors = true;
+	bool ignorekeys = false;
+	if(a == b){
+		ignorekeys = true;
 	}
 	Graph minimum(order);
 	DisjointSet set(order);
@@ -377,11 +360,11 @@ void Graph::MST(EdgeColor a, EdgeColor b){
 	for(std::size_t i = 0; i < edgeList.size(); i++){
 		int u = (*edgeList.at(i)).source;
 		int v = (*edgeList.at(i)).destination;
-		EdgeColor color = (*edgeList.at(i)).color;
+		EdgeKey key = (*edgeList.at(i)).key;
 		float distance = (*edgeList.at(i)).distance; //a.k.a edge weight
-		//Only add nodes with the same color edges, and those that are in different sets.
-		if((ignoreColors || color == a || color == b) && set.findSet(u) != set.findSet(v)){ 
-			minimum.addArc(u, v, distance, color);
+		//Only add nodes with the same key edges, and those that are in different sets.
+		if((ignorekeys || key == a || key == b) && set.findSet(u) != set.findSet(v)){ 
+			minimum.addArc(u, v, distance, key);
 			set.unite(u, v);
 		}
 	}
