@@ -31,7 +31,7 @@ public:
 		outEdges.push_back(temp);
 		totalNeighbors++;
 	}
-	std::vector<int> getNeighbors(){
+	std::vector<int> getNeighbors() const{
 		std::vector<int> neighborIndices;
 		for(int i = 0; i < totalNeighbors; i++){
 			neighborIndices.push_back(outEdges.at(i).destination);
@@ -167,7 +167,7 @@ void Graph::addArc(int from, int to, float distance, EdgeKey key){
 	(*vertexList.at(from)).addEdge(to, distance, key);
 }
 
-std::vector<int> Graph::getNeighbors(int from){
+std::vector<int> Graph::getNeighbors(int from) const {
 	return vertexList.at(from)->getNeighbors();
 }
 /*The element with highest distance is considered to be a lesser value, so that decreasing
@@ -287,7 +287,7 @@ void Graph::performBFS(int sourceID, EdgeKey key){
 }
 
 //Recursive helper function for print path
-bool Graph::buildPath(std::vector<int> &list, int dest)
+bool Graph::buildPath(std::vector<int> &list, int dest) const
 {
 	//nieed to check for valid input
 	//int i = 0;
@@ -305,7 +305,7 @@ bool Graph::buildPath(std::vector<int> &list, int dest)
 	return false;
 }
 
-void Graph::printPath(int destination){
+void Graph::printPath(int destination)const {
 	if(source == NIL){
 		std::cout << "Error: Source node not specified. Run Dijkstra's to set source node." << std::endl;
 		exit(1);
@@ -375,14 +375,14 @@ void Graph::MST(EdgeKey a, EdgeKey b){
 		std::cout << -1 << std::endl;
 	}
 	else{
-		minimum.print();
+		minimum.print(std::cout);
 		std::cout << "Total Cost of MST: " << minimum.totalWeight << std::endl;
 	}
 }
 
-void Graph::print(){
+void Graph::print(std::ostream& out) const{
 	for (std::size_t i = 0; i < vertexList.size(); i++) {
-		std::cout << i << ": ";
+		out << i << ": ";
 		(*vertexList.at(i)).print();
 	}
 }

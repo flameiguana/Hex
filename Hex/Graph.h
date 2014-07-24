@@ -20,8 +20,8 @@ public:
 	Graph(int order); explicit
 	Graph(const Graph& other);
 	Graph(const std::string &graphFilename);
-	int getOrder(){return order;}
-	int getSource(){return source;}
+	int getOrder() const {return order;}
+	int getSource() const {return source;}
 
 	/*Returns the average path length from the source vertex to all other vertices.
 	You can specify if you want the key to be taken into account.
@@ -37,18 +37,18 @@ public:
 	void addEdge(int from, int to, EdgeKey key, float distance = 0.0f);
 	void updateEdge(int from, int to, EdgeKey key, float distance = 0.0f);
 	void removeEdge(int from, int to);
-	std::vector<int> getNeighbors(int from);
+	std::vector<int> getNeighbors(int from) const; 
 	void addArc(int from, int to, float distance, EdgeKey key);
-	bool buildPath(std::vector<int> &list, int dest);
-	void printPath(int destination);
+	bool buildPath(std::vector<int> &list, int dest) const;
+	void printPath(int destination) const;
 	/*Print the graph along with its edge keys.*/
-	void print();
+	void print(std::ostream& out) const;
 	float getTotalWeight(){return totalWeight;};
 	~Graph();
 
 private:
 	class Edge;
-	class Vertex; //allow custom attributes, probably need to use templates.
+	class Vertex; //TODO: allow custom attributes, probably need to use templates.
 
 	int order;
 	float totalWeight;

@@ -2,25 +2,27 @@
 
 
 /*
-	A simple tile class that has a method for printing depending on the player number
-	value of the tile.
+	
 */
-class Hex::Tile{
+struct Hex::Tile{
 public:
 	TileType type;
-	int i, j;
+	int i;
+	int j;
 
 	Tile():type(Empty),i(0),j(0)
 	{};
 
-	Tile(int i, int j, int rows):i(i),j(j)
-	{
-		int columns = rows;
+	Tile(TileType type, int i, int j):type(type),i(i),j(j){}
+};
+
+//Determine initial type of tile based on layout of hex board. 
+//Only used in constructor
+Hex::TileType Hex::typeFromCoords(int i, int j) const{
 		bool left_right = false;
 		bool top_bottom = false;
-		type = Empty;
+		TileType type = Empty;
 
-		//TODO: move this logic somewhere else and pass tiletype to cosntructor
 		//Assign a tile type based on position
 		if(i < (columns + PADDING) && (j == 0 ||j == (rows + PADDING - 1))){
 			type = O;
@@ -30,14 +32,13 @@ public:
 			type = X;
 			left_right = true;
 		}
-		//This tyle doesnt have a type
+		//This tile doesnt have a type and should not connect with other tiles (one of the corner tiles)
 		if(left_right && top_bottom){
 			type = Invalid;
 		}
-	}
-};
 
-
+		return type;
+}
 /*
 * Creates all initial connections in underlying graph representation. The edge types
 * are initially Enpty which means there is no special O or X connection.
@@ -75,11 +76,11 @@ Hex::Hex(int rows, bool pieRule):rows(rows),columns(rows),turn(0),pieRule(pieRul
 			if(j < rows + PADDING - 1)
 				board->addEdge(mapping, map(i, j + 1), (Graph::EdgeKey)Empty); //Three
 			//Instead I create an array of tiles.
-			boardTiles.insert(boardTiles.begin() + mapping, Tile(i, j, rows));
+			boardTiles.insert(boardTiles.begin() + mapping, Tile(typeFromCoords(i, j), i, j));
 		}
 	}
 	//Tiles are now connected, It is time to create special connections.
-	//Make top and bottom rows red, left and right rows blue.
+	//Make top and bottom rows O, left and right rows X.
 	int lastIndex = columns + PADDING - 1;
 	for(int x = 1; x < rows + PADDING - 2 ; x++){
 			//Top and bottom are O.
@@ -120,7 +121,7 @@ bool Hex::checkWin(TileType tileType){
 		//Pick the topmost X tile on the left side as the source. Note that any of these nodes would do.
 		//Pick the topmost X tile on the right side as the destination.
 		board->performBFS(map(0, 1), (Graph::EdgeKey)X); 
-		//If there is a path, then blue player (player 1) wins.
+		//If there is a path, then X player (player 1) wins.
 		if(board->buildPath(path, map(columns + PADDING - 1, 1))){
 			/*For debugging:
 			for(int x = 0; x < path.size(); x++){
@@ -187,16 +188,16 @@ Two points if this tile connects to one of my own tiles
 One point if it connects to the other player's tile (potential block)
 */
 
-int Hex::evaluateTile(int index, TileType tileType){
+int Hex::evaluateTile(int index, TileType tileType) const{
 	int value = -1;
 
-	Tile& tile = boardTiles.at(index);
+	const Tile& tile = boardTiles.at(index);
 	if(tile.type == Empty){
 		value++;
 		std::vector<int> neighbors = board->getNeighbors(index);
 		std::vector<int>::iterator it;
 		for(it = neighbors.begin(); it != neighbors.end(); ++it){
-			Tile& neighborTile = boardTiles.at(*it);
+			const Tile& neighborTile = boardTiles.at(*it);
 			if(neighborTile.type == tileType)
 				value += 3;
 			else if(neighborTile.type != Invalid && neighborTile.type != Empty)
@@ -388,7 +389,7 @@ void Hex::printBoard(std::ostream& out) const{
 
 		spacing += 2;
 	}
-	//board->print(); prints the graph representation
+	//board->print(out); prints the graph representation
 }
 
 std::ostream& operator<<(std::ostream& out, const Hex& board)

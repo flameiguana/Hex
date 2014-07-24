@@ -25,6 +25,8 @@ void readInput(int &x){
 //Game loop. The hex class itself does not dictate how it should be used, so the client could have AI vs
 //AI or player vs player games if they really wanted to. I could even see the game being networked.
 void playGame(int rows, int simulations, bool humanFirst){
+	//needed by hex
+	srand ( unsigned ( std::time(0) ) );
 	Hex game(rows);
 	std::cout << game << std::endl;
 	int i,j;
@@ -63,10 +65,8 @@ void playGame(int rows, int simulations, bool humanFirst){
 
 
 int main(int argc, const char* arg[]){
-	//
+	//sounded good at the time. dont try running this many simulations in debug mode
 	const int simulations = 25000;
-	//needed by hex
-	srand ( unsigned ( std::time(0) ) );
 	printInstructions();
 
 	int rows;
