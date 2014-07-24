@@ -22,68 +22,49 @@ void readInput(int &x){
 	}
 }
 
-//Game loop.
-void goFirst(int rows, int simulations){
+//Game loop. The hex class itself does not dictate how it should be used, so the client could have AI vs
+//AI or player vs player games if they really wanted to. I could even see the game being networked.
+void playGame(int rows, int simulations, bool humanFirst){
 	Hex game(rows);
 	std::cout << game << std::endl;
 	int i,j;
+	bool myTurn = humanFirst;
+	//First player is always X
+	Hex::TileType playerMarker = Hex::X;
 	while(true){
-		readInput(i);
-		readInput(j);
-		//This will keep getting input until the move is valid.
-		while(!game.markBoard((Hex::TileType)1, i, j)){
+		if(myTurn)
+		{
+			std::cout << "Enter Your Move: ";
 			readInput(i);
 			readInput(j);
+			//This will keep getting input until the move is valid.
+			while(!game.markBoard(playerMarker, i, j)){
+				readInput(i);
+				readInput(j);
+			}
+		}
+		else
+		{
+			std::cout << "Waiting for AI..." << std::endl;
+			game.computerMoveMC(playerMarker, simulations); //is guaranteed to be valid
 		}
 		std::cout << game << std::endl;
-		if(game.checkWin((Hex::TileType)1))
+		if(game.checkWin(playerMarker))
 		{
-			std::cout << "Player 1 Wins" << std::endl;
+			std::cout << playerMarker << " Wins!" << std::endl;
 			break;
 		}
-			
-		std::cout << "Waiting for AI..." << std::endl;
-		game.computerMoveMC((Hex::TileType)2, simulations); //is guaranteed to be valid
-		std::cout << game << std::endl;
-		if(game.checkWin((Hex::TileType)2))
-		{
-			std::cout << "Player 2 Wins" << std::endl;
-			break;
-		}
+		myTurn = !myTurn;
+		//flip between X and O
+		playerMarker = playerMarker == Hex::X ? Hex::O : Hex::X;
 	}
 }
 
 
-void goSecond(int rows, int simulations){
-	Hex game(rows);
-	std::cout << game << std::endl;
-	int i,j;
-	while(true){
-		std::cout << "Waiting for AI..." << std::endl;
-		game.computerMoveMC((Hex::TileType)2, simulations);
- 		std::cout << game << std::endl;
-		if(game.checkWin((Hex::TileType)2))
-		{
-			std::cout << "Player 2 Wins" << std::endl;
-			break;
-		}
-		readInput(i);
-		readInput(j);
-		while(!game.markBoard((Hex::TileType)1, i, j)){
-			readInput(i);
-			readInput(j);
-		}
-		std::cout << game << std::endl;
-		if(game.checkWin((Hex::TileType)1))
-		{
-			std::cout << "Player 1 Wins" << std::endl;
-			break;
-		}
-	}
-}
 
 int main(int argc, const char* arg[]){
-	int simulations = 25000;
+	//
+	const int simulations = 25000;
 	//needed by hex
 	srand ( unsigned ( std::time(0) ) );
 	printInstructions();
@@ -96,10 +77,9 @@ int main(int argc, const char* arg[]){
 	std::cout << "Would you like to go first (y/n)?. First player is X, second is O" << std::endl;
 	std::cin >> first;
 
-	if(first == 'y')
-		goFirst(rows, simulations);
-	else
-		goSecond(rows, simulations);
+	bool humanFirst = (first == 'y');
+		
+	playGame(rows, simulations, humanFirst);
 
 	std::cin.get();
 	std::cout << "Press 'Enter' to exit the game." << std::endl;

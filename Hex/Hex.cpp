@@ -262,11 +262,11 @@ void Hex::computerMove(TileType tileType){
 /*
 	Make as a move based on MonteCarlo simulations. The more simulations the better the sample size.
 	Steps:
-	Copy current board.
-	For desired iterations, shuffle empty tiles and place tiles in alternating order. This
-	behaves as if the opponent is making random moves.
-	Check who won, give a point to first tile if it wins.
-	Find the tile with the highest win percentage and use that as the next real move.
+		Copy current board.
+		For desired iterations, shuffle empty tiles and place tiles in alternating order. This
+		behaves as if the opponent is making random moves.
+		Check who won, give a point to first tile if it wins.
+		Find the tile with the highest win percentage and use that as the next real move.
 */
 
 void Hex::computerMoveMC(TileType tileType, int simulations){
@@ -318,7 +318,9 @@ void Hex::computerMoveMC(TileType tileType, int simulations){
 		computerMove(tileType); // Use the other AI
 	}
 	else
+	{
 		markBoard(tileType, unmapi(bestTileIndex) - 1, unmapj(bestTileIndex) - 1);
+	}
 }
 
 //Anonymous namespace to hide implementation details (as opposed to using private static methods)
