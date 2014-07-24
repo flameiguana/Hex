@@ -21,7 +21,7 @@ private:
 	bool pieRule;
 	//The internal data structure for the board tiles, since my 
 	//graph class doesn't allow for template variables.
-	std::vector<Tile*> boardTiles;
+	std::vector<Tile> boardTiles;
 
 	Graph* board;
 	int boardSize;

@@ -10,33 +10,32 @@ public:
 	//Default playerNumnber in tile is 0 (blank tile).
 	int playerNumber;
 	int i, j;
-	//bool playable; //is this tile playable?
 
+	Tile():playerNumber(0),i(0),j(0)
+		{};
 	Tile(int i, int j, int rows):i(i),j(j)
 	{
 		int columns = rows;
 		bool BLUE = false;
 		bool RED = false;
-		bool playable = true;
 		playerNumber = 0;
+
+		//TODO: move this logic somewhere else and pass playerNumber to cosntructor
 		//Makes these tiles red or blue by default
 		if(i < (columns + PADDING) && (j == 0 ||j == (rows + PADDING - 1))){
 			playerNumber = 2;
-			playable = false;
 			RED = true;
 		}
 		if(j < (rows + PADDING) && (i == 0 || i == (columns + PADDING - 1 ))){
 			playerNumber = 1;
-			playable = false;
 			BLUE = true;
 		}
 		//Color for this tile doesn't matter.
 		if(BLUE && RED){
 			playerNumber = 3;
-			playable = false;
 		}
 	}
-	char getPlayerChar(){
+	char getPlayerChar() const{
 		char tileChar = 0;
 		switch(playerNumber){
 			case 0:
@@ -94,7 +93,7 @@ Hex::Hex(int rows, bool pieRule):rows(rows),columns(rows),turn(0),pieRule(pieRul
 			if(j < rows + PADDING - 1)
 				board->addEdge(mapping, map(i, j + 1), 0.0f, Graph::GREEN); //Three
 			//Instead I create an array of tiles.
-			boardTiles[mapping] = new Tile(i, j, rows);
+			boardTiles.insert(boardTiles.begin() + mapping, Tile(i, j, rows));
 		}
 	}
 	//Tiles are now connected, It is time to create special connections.
@@ -116,8 +115,8 @@ Hex::Hex(const Hex& other){
 	boardSize = other.boardSize;
 	board = new Graph(*other.board);
 	boardTiles.resize(boardSize);
-	for(int i = 0;  i <  other.boardTiles.size(); i++)
-		boardTiles.at(i) = new Tile(*other.boardTiles.at(i));
+	//copy other tiles by value
+	boardTiles = other.boardTiles;
 	pieRule = other.pieRule;
 	previousMove = other.previousMove;
 	rows = other.rows;
@@ -190,18 +189,18 @@ bool Hex::markBoard(int playerNumber, int i, int j){
 	j++;
 
 	int thisTile = map(i,j);
-	Tile* tile = boardTiles.at(thisTile);
+	Tile& tile = boardTiles.at(thisTile);
 	//Check if a player is already there. Take into account pie rule.
-	if(tile->playerNumber != 0 && !(pieRule && turn == 1)){
+	if(tile.playerNumber != 0 && !(pieRule && turn == 1)){
 		std::cout << "Invalid Move: Position Already Taken " << i -1 << ", " << j -1<< std::endl;
 		return false;
 	}
 	turn++;
-	tile->playerNumber = playerNumber;
+	tile.playerNumber = playerNumber;
 	std::vector<int> sorroundingTiles = board->getNeighbors(thisTile);
 	for(int i = 0; i < sorroundingTiles.size(); i++){
 		int thatTile = sorroundingTiles.at(i);
-		if(playerNumber == boardTiles.at(thatTile)->playerNumber){
+		if(playerNumber == boardTiles.at(thatTile).playerNumber){
 			Graph::EdgeColor color;
 			if(playerNumber == 1)
 				color = Graph::BLUE;
@@ -220,15 +219,15 @@ bool Hex::markBoard(int playerNumber, int i, int j){
 int Hex::evaluateTile(int index, int playerNumber){
 	int value = -1;
 
-	Tile tile = *boardTiles.at(index);
+	Tile& tile = boardTiles.at(index);
 	if(tile.playerNumber == 0){
 		value++;
 		std::vector<int> neighbors = board->getNeighbors(index);
 		for(int i = 0; i < neighbors.size(); i++){
-			Tile* neighborTile = boardTiles.at(neighbors.at(i));
-			if(neighborTile->playerNumber == playerNumber)
+			Tile& neighborTile = boardTiles.at(neighbors.at(i));
+			if(neighborTile.playerNumber == playerNumber)
 				value += 3;
-			else if(neighborTile->playerNumber != 3 && neighborTile->playerNumber != 0)
+			else if(neighborTile.playerNumber != 3 && neighborTile.playerNumber != 0)
 				value++; //there will always be one
 		}
 	}
@@ -274,8 +273,8 @@ void Hex::computerMove(int playerNumber){
 	//No playable tile was found. Find first empty tile. Ideally would want next best tile.
 	if (maxValue == -1){
 		for(int i = 0; i < boardTiles.size(); i ++){
-			if(boardTiles.at(i)->playerNumber == 0){
-				markBoard(playerNumber, boardTiles.at(i)->i - 1, boardTiles.at(i)->j - 1);
+			if(boardTiles.at(i).playerNumber == 0){
+				markBoard(playerNumber, boardTiles.at(i).i - 1, boardTiles.at(i).j - 1);
 				return;
 			}
 		}
@@ -307,7 +306,7 @@ void Hex::computerMoveMC(int playerNumber, int simulations){
 	// was placed there but iterators get invalidated and shit.
 	std::vector<int> emptyTiles;
 	for(int i = 0; i < boardSize; i++){
-		if(boardTiles.at(i)->playerNumber == 0)
+		if(boardTiles.at(i).playerNumber == 0)
 			emptyTiles.push_back(i);
 	}
 
@@ -403,7 +402,8 @@ void Hex::printBoard(std::ostream& out) const{
 
 		//Print the actual values in the tiles.
 		for(int i = 0; i < (rows + PADDING); i++){
-			out << boardTiles.at(map(i,j))->getPlayerChar();
+			const Tile& tile = boardTiles.at(map(i,j));
+			out << tile.getPlayerChar();
 			out << " | ";
 		}
 		out << std::endl;
@@ -427,8 +427,5 @@ std::ostream& operator<<(std::ostream& out, const Hex& board)
 
 //Apply delete on all pointers.
 Hex::~Hex(){
-	for(int i = 0; i < boardSize; i++){
-		delete boardTiles.at(i);
-	}
 	delete board;
 }
